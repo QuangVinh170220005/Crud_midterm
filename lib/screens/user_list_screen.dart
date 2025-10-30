@@ -5,6 +5,7 @@ import 'add_user_screen.dart';
 import 'edit_user_screen.dart';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'login_screen.dart';
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({super.key});
@@ -16,6 +17,7 @@ class UserListScreen extends StatefulWidget {
 class _UserListScreenState extends State<UserListScreen> {
   List<AppUser> _users = [];
   bool _loading = false;
+  List<bool> _showPasswords = [];
   String? _error;
 
   @override
@@ -33,6 +35,7 @@ class _UserListScreenState extends State<UserListScreen> {
       final users = await MongoService.fetchUsers();
       setState(() {
         _users = users;
+        _showPasswords = List<bool>.filled(users.length, false);
         _loading = false;
       });
     }catch(e){
@@ -124,10 +127,20 @@ class _UserListScreenState extends State<UserListScreen> {
   Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Danh sách nguòiư dùng'),
+        title: const Text('Danh sách người dùng'),
         backgroundColor: Colors.lightBlue,
         actions: [
           IconButton(onPressed: _loadUsers, icon: const Icon(Icons.refresh), tooltip: 'Làm mới',),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Đăng xuất',
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+          ),
         ],
       ),
       body: _loading ? const Center(child: CircularProgressIndicator()) : _error != null
@@ -245,14 +258,30 @@ class _UserListScreenState extends State<UserListScreen> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.lock,
-                                  size: 16, color: Colors.grey),
+                              const Icon(Icons.lock, size: 16, color: Colors.grey),
                               const SizedBox(width: 4),
-                              Text(
-                                '•' * user.password.length,
-                                style: const TextStyle(
+                              Expanded(
+                                child: Text(
+                                  _showPasswords[index]
+                                      ? user.password
+                                      : '•' * user.password.length,
+                                  style: const TextStyle(color: Colors.grey),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  _showPasswords[index]
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  size: 18,
                                   color: Colors.grey,
                                 ),
+                                onPressed: () {
+                                  setState(() {
+                                    _showPasswords[index] = !_showPasswords[index];
+                                  });
+                                },
                               ),
                             ],
                           ),

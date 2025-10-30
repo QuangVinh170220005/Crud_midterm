@@ -22,6 +22,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
   Uint8List? _imageBytes;
   String? _originalImage;
   bool _saving = false;
+  bool _obscurePassword = true;
   bool _imageChanged = false;
 
   @override
@@ -157,14 +158,23 @@ class _EditUserScreenState extends State<EditUserScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Mật khẩu',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
-                  validator: (v) => (v == null || v.isEmpty)
-                      ? 'Vui lòng nhập mật khẩu'
-                      : null,
+                  obscureText: _obscurePassword,
+                  validator: (v) =>
+                  (v == null || v.isEmpty) ? 'Vui lòng nhập mật khẩu' : null,
                 ),
                 const SizedBox(height: 24),
                 const Text(
